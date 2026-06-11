@@ -37,7 +37,7 @@ const config = {
 
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     },
 
     backgroundColor: '#7ebec6'
@@ -90,13 +90,22 @@ function create(){
         baseY - 200
     );
 
+    this.numText = this.add.text(
+        30, 30, 
+        '0',
+        {
+            fontFamily: 'Calibri',
+            fontSize: '40px',
+            color: '#6353ce'
+        }
+    );
+
     // 最初のブロック生成
     spawnBlock(this);
 
 }
 
 function update(){
-    console.log("update!!");
 
     // 操作可能な状態（落下前）の場合
     if (activeBlock && !isFalling){
@@ -107,12 +116,12 @@ function update(){
             activeBlock.x += 4; // 右へ
         }
 
-        if(Phaser.Input.Keyboard.JustDown(cursors.up)){
-            activeBlock.angle += 30;
+        if(cursors.up.isDown){
+            activeBlock.angle += 3;
         }
 
-        if(Phaser.Input.Keyboard.JustDown(cursors.down)){
-            activeBlock.angle -= 30;
+        if(cursors.down.isDown){
+            activeBlock.angle -= 3;
         }
 
         if(Phaser.Input.Keyboard.JustDown(cursors.space)){
@@ -162,6 +171,16 @@ function update(){
         }
 
         }
+    
+    const cam = this.cameras.main;
+
+    this.numText.setPosition(
+        cam.worldView.x + 30 / cam.zoom,
+        cam.worldView.y + 30 / cam.zoom,
+    );
+
+    this.numText.setScale(1 / cam.zoom);
+    this.numText.setText(String(getNumofObject()));
 
 }
 
@@ -192,8 +211,6 @@ function spawnBlock(scene){
     activeBlock.setStatic(true);
     activeBlock.setSensor(true);
 
-    blocks.push(activeBlock);
-
     // ステータス初期化
     isFalling = false;
 
@@ -204,6 +221,8 @@ function dropBlock(scene){
     if (!activeBlock) return ;
 
     isFalling = true;
+
+    blocks.push(activeBlock);
 
     // 静的状態解除
     activeBlock.setStatic(false); 
@@ -227,4 +246,29 @@ function getTowerTopY(){
     }
 
     return topY;
+}
+
+function getNumofObject(){
+    
+    if (!blocks) {
+        return 0;
+    }
+
+    else {
+
+        for (const block of blocks){
+
+            if (block.y > baseY + 500){
+                
+                block.destroy();
+                blocks = blocks.filter(b => b !== block);
+
+            }
+
+        }
+
+        return blocks.length;
+
+    }
+
 }
